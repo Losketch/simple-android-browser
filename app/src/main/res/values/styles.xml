@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="AppTheme" parent="android:Theme.DeviceDefault.Light">
+        <item name="android:colorBackground">@color/back</item>
+        <item name="android:statusBarColor">@color/back</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowSplashScreenBackground" tools:ignore="NewApi">@android:color/black</item>
+        <item name="android:windowSplashScreenAnimationDuration" tools:ignore="NewApi">100</item>
+    </style>
+
+</resources>

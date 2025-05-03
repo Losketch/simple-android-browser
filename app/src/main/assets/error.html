@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>无网络连接 - CharToolkit++</title>
+	<style>
+		:root {
+			--bg: #0f172a;
+			--text: #e2e8f0;
+			--accent: #38bdf8;
+			--error-line: #4f46e5;
+		}
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			background: var(--bg);
+			color: var(--text);
+			font-family: 'Segoe UI', system-ui, sans-serif;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+			overflow: hidden;
+		}
+		.grid-line {
+			position: absolute;
+			width: 100vw;
+			height: 1px;
+			background: linear-gradient(90deg, transparent, var(--error-line), transparent);
+			animation: scan 8s infinite linear;
+			opacity: 0.1;
+		}
+		@keyframes scan {
+			0% { transform: translateX(-100%); }
+			100% { transform: translateX(100%); }
+		}
+		.container {
+			text-align: center;
+			padding: 2rem;
+			max-width: 600px;
+			z-index: 1;
+		}
+		.offline-icon {
+			width: 120px;
+			height: 120px;
+			margin: 0 auto 1.5rem;
+			position: relative;
+		}
+		.offline-icon::before {
+			content: "🌐";
+			font-size: 80px;
+			filter: grayscale(1);
+			opacity: 0.6;
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		.offline-icon::after {
+			content: "❌";
+			font-size: 40px;
+			color: #ef4444;
+			position: absolute;
+			bottom: 0;
+			right: 5px;
+		}
+		h1 {
+			color: var(--accent);
+			font-size: 1.8rem;
+			margin-bottom: 1rem;
+			letter-spacing: 0.05em;
+		}
+		.description {
+			opacity: 0.8;
+			line-height: 1.6;
+			margin-bottom: 2rem;
+		}
+		.retry-btn {
+			background: rgba(56, 189, 248, 0.1);
+			color: var(--accent);
+			border: 1px solid var(--accent);
+			padding: 0.8rem 2rem;
+			border-radius: 6px;
+			font-size: 1rem;
+			cursor: pointer;
+			transition: all 0.3s;
+			backdrop-filter: blur(4px);
+		}
+		.retry-btn:hover {
+			background: var(--accent);
+			color: var(--bg);
+			box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+		}
+		.status {
+			margin-top: 1.5rem;
+			font-size: 0.9rem;
+			opacity: 0.7;
+		}
+
+		@media screen and (max-width: 412px) {
+			.description {
+				font-size: 0.9rem;
+			}
+		}
+		@media screen and (max-width: 377px) {
+			.description {
+				font-size: 0.8rem;
+			}
+			h1 {
+				font-size: 1.6rem;
+			}
+		}
+		@media screen and (max-width: 343px) {
+			.container {
+				padding: 0;
+			}
+			.description {
+				font-size: 0.7rem;
+			}
+			h1 {
+				font-size: 1.4rem;
+			}
+			.status {
+				font-size: 0.7rem;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="grid-line" style="top: 20%"></div>
+	<div class="grid-line" style="top: 50%"></div>
+	<div class="grid-line" style="top: 80%"></div>
+
+	<div class="container">
+		<div class="offline-icon"></div>
+		<h1>无法连接网络</h1>
+		<p class="description">
+		您的设备似乎处于离线状态。<br>
+		请检查 Wi-Fi 或移动数据连接，然后重试。
+		</p>
+		<button class="retry-btn" onclick="window.history.go(-1)">重新加载</button>
+		<p class="status">错误类型：网络连接超时</p>
+	</div>
+</body>
+</html>
