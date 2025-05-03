@@ -1,0 +1,3 @@
+[submodule "externals/fun-html"]
+	path = externals/fun-html
+	url = https://github.com/1-PT-AxH-RV-0/fun-html.git
