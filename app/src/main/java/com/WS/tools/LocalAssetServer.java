@@ -12,16 +12,20 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
 import com.koushikdutta.async.http.server.AsyncHttpServer;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.net.URLConnection;
 import java.nio.ByteOrder;
 import java.util.Enumeration;
 
 public class LocalAssetServer {
     private static AsyncHttpServer server;
+    // 初始端口号
     private static int port = 8270;
     private static Context appContext;
     private static final int NOTIFICATION_ID = 1001;
@@ -33,6 +37,8 @@ public class LocalAssetServer {
 
         appContext = context.getApplicationContext();
         server = new AsyncHttpServer();
+
+        // 静态资源路由
         server.get("/.*", (request, response) -> {
             try {
                 String path = request.getPath().replaceFirst("/", "");
@@ -49,10 +55,13 @@ public class LocalAssetServer {
             }
         });
 
-        // 监听所有接口上的端口，而不仅仅是localhost
+        // 探测一个可用端口
+        port = findAvailablePort(port);
+
+        // 监听所有接口上的这个可用端口
         server.listen(port);
 
-        // 显示永久通知
+        // 显示通知
         showServerNotification();
     }
 
@@ -61,7 +70,6 @@ public class LocalAssetServer {
             server.stop();
             server = null;
 
-            // 移除通知
             if (notificationManager != null) {
                 notificationManager.cancel(NOTIFICATION_ID);
             }
@@ -72,63 +80,50 @@ public class LocalAssetServer {
         return "http://localhost:" + port + "/";
     }
 
-    // 获取设备在局域网中的IP地址，供局域网内其他设备访问
     public static String getLocalNetworkUrl() {
         String ipAddress = getLocalIpAddress();
         if (ipAddress != null) {
             return "http://" + ipAddress + ":" + port + "/";
         } else {
-            return getLocalUrl(); // 如果获取不到IP地址，返回localhost地址
+            return getLocalUrl();
         }
     }
 
-    // 获取设备的局域网IP地址
     private static String getLocalIpAddress() {
         try {
-            // 尝试获取WIFI IP地址
             WifiManager wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
             if (wifiManager != null && wifiManager.isWifiEnabled()) {
                 int ipInt = wifiManager.getConnectionInfo().getIpAddress();
-                // 转换字节顺序
                 if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
                     ipInt = Integer.reverseBytes(ipInt);
                 }
-
                 byte[] ipByteArray = BigInteger.valueOf(ipInt).toByteArray();
                 InetAddress ipAddress = InetAddress.getByAddress(ipByteArray);
                 return ipAddress.getHostAddress();
             }
-
-            // 如果WIFI未连接，尝试获取其他网络接口
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = networkInterfaces.nextElement();
-                // 跳过回环接口、虚拟接口等
-                if (!networkInterface.isUp() || networkInterface.isLoopback() ||
-                        networkInterface.isVirtual() || networkInterface.isPointToPoint()) {
+                NetworkInterface ni = networkInterfaces.nextElement();
+                if (!ni.isUp() || ni.isLoopback() || ni.isVirtual() || ni.isPointToPoint()) {
                     continue;
                 }
-
-                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
                 while (addresses.hasMoreElements()) {
-                    InetAddress address = addresses.nextElement();
-                    if (!address.isLoopbackAddress() && address.getHostAddress().indexOf(':') < 0) {
-                        return address.getHostAddress();
+                    InetAddress addr = addresses.nextElement();
+                    if (!addr.isLoopbackAddress() && addr.getHostAddress().indexOf(':') < 0) {
+                        return addr.getHostAddress();
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
-    // 显示永久通知，展示服务器地址
     private static void showServerNotification() {
         notificationManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // 为Android 8.0及以上创建通知渠道
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
@@ -140,36 +135,56 @@ public class LocalAssetServer {
 
         String serverUrl = getLocalNetworkUrl();
 
-        // 创建点击复制地址的Intent
         Intent copyIntent = new Intent(appContext, NotificationActionReceiver.class);
         copyIntent.setAction("COPY_URL");
         copyIntent.putExtra("URL", serverUrl);
         PendingIntent copyPendingIntent = PendingIntent.getBroadcast(
-                appContext, 0, copyIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                appContext, 0, copyIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // 创建点击打开浏览器的Intent
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(serverUrl));
         PendingIntent browserPendingIntent = PendingIntent.getActivity(
-                appContext, 0, browserIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                appContext, 0, browserIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // 构建通知
         NotificationCompat.Builder builder = new NotificationCompat.Builder(appContext, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher) // 替换为你的应用图标
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("局域网联机运行中")
                 .setContentText("访问地址: " + serverUrl)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setOngoing(true) // 设置为持续通知
+                .setOngoing(true)
                 .addAction(android.R.drawable.ic_menu_save, "复制地址", copyPendingIntent)
                 .setContentIntent(browserPendingIntent);
 
-        // 显示通知
         notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    // 更新通知中的服务器地址（当IP地址变化时可调用）
     public static void updateServerNotification() {
         if (appContext != null && server != null) {
             showServerNotification();
         }
+    }
+
+    /**
+     * 从 startPort 开始，依次 +1，直到找到一个可用端口（<=65535），找不到则返回 startPort 本身。
+     */
+    private static int findAvailablePort(int startPort) {
+        int p = startPort;
+        while (p <= 65535) {
+            ServerSocket ss = null;
+            try {
+                ss = new ServerSocket(p);
+                ss.setReuseAddress(true);
+                return p;
+            } catch (IOException e) {
+                p++;
+            } finally {
+                if (ss != null) {
+                    try { ss.close(); } catch (IOException ignored) {}
+                }
+            }
+        }
+        // 如果一直没找到，则退回原端口
+        return startPort;
     }
 }
