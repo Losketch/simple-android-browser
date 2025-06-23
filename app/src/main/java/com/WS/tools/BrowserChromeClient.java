@@ -18,6 +18,8 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import androidx.annotation.RequiresApi;
+
 public class BrowserChromeClient extends WebChromeClient {
     private final Activity activity;
     private final ProgressBar progressBar;
@@ -102,6 +104,7 @@ public class BrowserChromeClient extends WebChromeClient {
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.ECLAIR)
     @Override
     public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
         new AlertDialog.Builder(activity)
@@ -147,6 +150,7 @@ public class BrowserChromeClient extends WebChromeClient {
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void setupNewWebView(WebView newWebView) {
         WebSettings newSettings = newWebView.getSettings();
         WebSettings mainSettings = mainWebView.getSettings();
