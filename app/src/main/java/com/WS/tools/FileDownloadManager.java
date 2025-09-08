@@ -81,7 +81,10 @@ public class FileDownloadManager {
         values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
         ContentResolver resolver = context.getContentResolver();
-        Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        Uri uri = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        }
         if (uri != null) {
             OutputStream os = resolver.openOutputStream(uri);
             if (os != null) {

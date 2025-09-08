@@ -12,12 +12,13 @@ import android.webkit.WebView;
 import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+
 public class MainActivity extends Activity {
     protected ValueCallback<Uri[]> filePathCallback;
     private WebView mWebView;
     private static final int FILE_CHOOSER_RESULT_CODE = 1;
     private WebView currentChildWebView = null;
-    private WebViewManager webViewManager;
     private PermissionsHandler permissionsHandler;
 
     @Override
@@ -35,7 +36,7 @@ public class MainActivity extends Activity {
         permissionsHandler.checkAndRequestStoragePermission();
         
         // Initialize WebView manager
-        webViewManager = new WebViewManager(this, mWebView);
+        WebViewManager webViewManager = new WebViewManager(this, mWebView);
         webViewManager.setupWebView();
         webViewManager.setFilePathCallbackListener(callback -> filePathCallback = (ValueCallback<Uri[]>) callback);
         webViewManager.setChildWebViewListener(webView -> currentChildWebView = webView);
@@ -71,9 +72,9 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        permissionsHandler.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionsHandler.onRequestPermissionsResult(requestCode, grantResults);
     }
 
     @Override

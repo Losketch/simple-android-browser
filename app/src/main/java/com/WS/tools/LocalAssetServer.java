@@ -22,6 +22,7 @@ import java.net.ServerSocket;
 import java.net.URLConnection;
 import java.nio.ByteOrder;
 import java.util.Enumeration;
+import java.util.Objects;
 
 public class LocalAssetServer {
     private static AsyncHttpServer server;
@@ -91,7 +92,7 @@ public class LocalAssetServer {
 
     private static String getLocalIpAddress() {
         try {
-            WifiManager wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiManager = (WifiManager) appContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifiManager != null && wifiManager.isWifiEnabled()) {
                 int ipInt = wifiManager.getConnectionInfo().getIpAddress();
                 if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
@@ -110,7 +111,7 @@ public class LocalAssetServer {
                 Enumeration<InetAddress> addresses = ni.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     InetAddress addr = addresses.nextElement();
-                    if (!addr.isLoopbackAddress() && addr.getHostAddress().indexOf(':') < 0) {
+                    if (!addr.isLoopbackAddress() && Objects.requireNonNull(addr.getHostAddress()).indexOf(':') < 0) {
                         return addr.getHostAddress();
                     }
                 }
@@ -171,17 +172,11 @@ public class LocalAssetServer {
     private static int findAvailablePort(int startPort) {
         int p = startPort;
         while (p <= 65535) {
-            ServerSocket ss = null;
-            try {
-                ss = new ServerSocket(p);
+            try (ServerSocket ss = new ServerSocket(p)) {
                 ss.setReuseAddress(true);
                 return p;
             } catch (IOException e) {
                 p++;
-            } finally {
-                if (ss != null) {
-                    try { ss.close(); } catch (IOException ignored) {}
-                }
             }
         }
         // 如果一直没找到，则退回原端口

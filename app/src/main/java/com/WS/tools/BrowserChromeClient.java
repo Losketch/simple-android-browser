@@ -104,7 +104,6 @@ public class BrowserChromeClient extends WebChromeClient {
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.ECLAIR)
     @Override
     public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
         new AlertDialog.Builder(activity)
@@ -127,7 +126,7 @@ public class BrowserChromeClient extends WebChromeClient {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.O)
     @Override
     public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
         WebView newWebView = new WebView(activity);
@@ -150,7 +149,6 @@ public class BrowserChromeClient extends WebChromeClient {
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void setupNewWebView(WebView newWebView) {
         WebSettings newSettings = newWebView.getSettings();
         WebSettings mainSettings = mainWebView.getSettings();

@@ -9,7 +9,7 @@ import android.widget.Toast;
 public class PermissionsHandler {
     private final Activity activity;
     private static final int STORAGE_PERMISSION_REQUEST = 1;
-    
+
     public PermissionsHandler(Activity activity) {
         this.activity = activity;
     }
@@ -25,7 +25,7 @@ public class PermissionsHandler {
         }
     }
     
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, int[] grantResults) {
         if (requestCode == STORAGE_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(activity, "存储权限被拒绝，文件功能可能无法使用！", Toast.LENGTH_LONG).show();

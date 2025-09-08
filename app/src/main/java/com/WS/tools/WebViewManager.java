@@ -57,8 +57,9 @@ public class WebViewManager {
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
-        webSettings.setAppCacheEnabled(true);
-        webSettings.setAppCachePath(activity.getApplicationContext().getCacheDir().getAbsolutePath());
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setDatabaseEnabled(true);
 
         // Advanced settings
         webSettings.setBuiltInZoomControls(true);

@@ -1,19 +1,25 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 36
+    namespace 'com.WS.tools'
 
     defaultConfig {
         applicationId "com.character.display.software"
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 4418
-        versionName "4.1.8"
+        targetSdkVersion 33
+        versionCode 4420
+        versionName "4.2.0"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets {
+        main {
+            assets.srcDirs = ['../externals/fun-html/dist', 'src/main/assets']
         }
     }
 }
@@ -21,6 +27,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.koushikdutta.async:androidasync:3.1.0'
-    implementation 'org.jetbrains:annotations:15.0'
-    implementation 'androidx.core:core:1.7.0'
+    //noinspection NewerVersionAvailable
+    implementation 'org.jetbrains:annotations:26.0.2-1'
+    //noinspection GradleDependency
+    implementation 'androidx.core:core:1.13.0'
 }
