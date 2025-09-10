@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
@@ -19,10 +20,10 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.net.URLConnection;
 import java.nio.ByteOrder;
 import java.util.Enumeration;
-import java.util.Objects;
 
 public class LocalAssetServer {
     private static AsyncHttpServer server;
@@ -31,6 +32,7 @@ public class LocalAssetServer {
     private static Context appContext;
     private static final int NOTIFICATION_ID = 1001;
     private static final String CHANNEL_ID = "local_server_channel";
+    private static final String TAG = "LocalAssetServer";
     private static NotificationManager notificationManager;
 
     public static void start(Context context) {
@@ -92,16 +94,23 @@ public class LocalAssetServer {
 
     private static String getLocalIpAddress() {
         try {
+            // 优先尝试WiFi连接的IP
             WifiManager wifiManager = (WifiManager) appContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifiManager != null && wifiManager.isWifiEnabled()) {
                 int ipInt = wifiManager.getConnectionInfo().getIpAddress();
-                if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-                    ipInt = Integer.reverseBytes(ipInt);
+                if (ipInt != 0) { // 检查是否有有效IP
+                    if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+                        ipInt = Integer.reverseBytes(ipInt);
+                    }
+                    byte[] ipByteArray = BigInteger.valueOf(ipInt).toByteArray();
+                    InetAddress ipAddress = InetAddress.getByAddress(ipByteArray);
+                    String wifiIp = ipAddress.getHostAddress();
+                    Log.d(TAG, "获取到WiFi IP地址: " + wifiIp);
+                    return wifiIp;
                 }
-                byte[] ipByteArray = BigInteger.valueOf(ipInt).toByteArray();
-                InetAddress ipAddress = InetAddress.getByAddress(ipByteArray);
-                return ipAddress.getHostAddress();
             }
+
+            // 如果WiFi方式失败，遍历网络接口
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface ni = networkInterfaces.nextElement();
@@ -111,13 +120,20 @@ public class LocalAssetServer {
                 Enumeration<InetAddress> addresses = ni.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     InetAddress addr = addresses.nextElement();
-                    if (!addr.isLoopbackAddress() && Objects.requireNonNull(addr.getHostAddress()).indexOf(':') < 0) {
-                        return addr.getHostAddress();
+                    String hostAddress = addr.getHostAddress();
+                    if (!addr.isLoopbackAddress() && hostAddress != null && hostAddress.indexOf(':') < 0) {
+                        Log.d(TAG, "获取到网络接口IP地址: " + hostAddress);
+                        return hostAddress;
                     }
                 }
             }
+            Log.w(TAG, "未找到可用的IP地址");
+        } catch (SecurityException e) {
+            Log.e(TAG, "获取IP地址权限不足", e);
+        } catch (SocketException e) {
+            Log.e(TAG, "网络接口异常", e);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "获取本地IP地址时发生未知异常", e);
         }
         return null;
     }

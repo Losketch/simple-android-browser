@@ -1,5 +1,6 @@
 package com.WS.tools;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.net.http.SslError;
@@ -22,6 +23,7 @@ public class BrowserWebViewClient extends WebViewClient {
         view.loadUrl("file:///android_asset/error.html");
     }
     
+    @SuppressLint("WebViewClientOnReceivedSslError")
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
         // 生产环境应提示用户SSL错误并给予选择

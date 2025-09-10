@@ -4,6 +4,10 @@ android {
     compileSdkVersion 36
     namespace 'com.WS.tools'
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId "com.character.display.software"
         minSdkVersion 21
@@ -13,8 +17,12 @@ android {
     }
     buildTypes {
         release {
+            debuggable false
             minifyEnabled true
+            shrinkResources true
+
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "IS_DEBUG", "false"
         }
     }
     sourceSets {

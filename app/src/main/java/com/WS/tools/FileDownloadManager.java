@@ -8,12 +8,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 public class FileDownloadManager {
@@ -47,6 +49,8 @@ public class FileDownloadManager {
                      "attachment", getMimeType(imageUrl));
     }
 
+    private static final String TAG = "FileDownloadManager";
+
     public static void saveDataUrlToFile(Context context, String dataUrl, String fileName) {
         try {
             if (dataUrl != null && dataUrl.startsWith("data:")) {
@@ -69,7 +73,7 @@ public class FileDownloadManager {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "下载失败", e);
             Toast.makeText(context, "下载失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -97,16 +101,27 @@ public class FileDownloadManager {
 
     private static void saveFileDirectly(Context context, byte[] data, String fileName) throws Exception {
         File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+        // 检查目录是否存在，如果不存在则创建，并检查创建结果
         if (!downloadsDir.exists()) {
-            downloadsDir.mkdirs();
+            if (!downloadsDir.mkdirs()) {
+                Log.e(TAG, "无法创建下载目录: " + downloadsDir.getAbsolutePath());
+                throw new Exception("无法创建下载目录");
+            }
         }
 
         File file = new File(downloadsDir, fileName);
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(data);
-        fos.close();
 
-        Toast.makeText(context, "文件已下载到" + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+        // 使用 try-with-resources 确保流被正确关闭
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(data);
+            fos.flush(); // 确保数据写入
+            Log.i(TAG, "文件下载成功: " + file.getAbsolutePath());
+            Toast.makeText(context, "文件已下载到" + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Log.e(TAG, "写入文件失败: " + file.getAbsolutePath(), e);
+            throw new Exception("文件写入失败: " + e.getMessage());
+        }
     }
 
     public static String getMimeType(String fileUrl) {

@@ -38,7 +38,7 @@ public class MainActivity extends Activity {
         // Initialize WebView manager
         WebViewManager webViewManager = new WebViewManager(this, mWebView);
         webViewManager.setupWebView();
-        webViewManager.setFilePathCallbackListener(callback -> filePathCallback = (ValueCallback<Uri[]>) callback);
+        webViewManager.setFilePathCallbackListener(callback -> filePathCallback = callback);
         webViewManager.setChildWebViewListener(webView -> currentChildWebView = webView);
         
         // Start local server and load URL

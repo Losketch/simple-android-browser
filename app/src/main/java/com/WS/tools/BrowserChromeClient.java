@@ -1,9 +1,7 @@
 package com.WS.tools;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -17,8 +15,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-
-import androidx.annotation.RequiresApi;
 
 public class BrowserChromeClient extends WebChromeClient {
     private final Activity activity;
@@ -69,12 +65,7 @@ public class BrowserChromeClient extends WebChromeClient {
         new AlertDialog.Builder(activity)
             .setTitle("提示")
             .setMessage(message)
-            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    result.confirm();
-                }
-            })
+            .setPositiveButton("确定", (dialog, which) -> result.confirm())
             .setCancelable(false)
             .create()
             .show();
@@ -86,18 +77,8 @@ public class BrowserChromeClient extends WebChromeClient {
         new AlertDialog.Builder(activity)
             .setTitle("确认")
             .setMessage(message)
-            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    result.confirm();
-                }
-            })
-            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    result.cancel();
-                }
-            })
+            .setPositiveButton("确定", (dialog, which) -> result.confirm())
+            .setNegativeButton("取消", (dialog, which) -> result.cancel())
             .setCancelable(false)
             .create()
             .show();
