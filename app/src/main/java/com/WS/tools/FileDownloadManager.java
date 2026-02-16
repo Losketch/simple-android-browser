@@ -24,7 +24,9 @@ public class FileDownloadManager {
                                     String contentDisposition, String mimeType) {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setMimeType(mimeType);
-        request.addRequestHeader("User-Agent", userAgent);
+        if (userAgent != null) {
+            request.addRequestHeader("User-Agent", userAgent);
+        }
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 
         // 获取推测的文件名并确保它有正确的扩展名
@@ -66,11 +68,20 @@ public class FileDownloadManager {
                 String base64Data = dataUrl.substring(dataUrl.indexOf(",") + 1);
                 byte[] decodedData = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT);
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    saveFileUsingMediaStore(context, decodedData, fileName, mimeType);
-                } else {
-                    saveFileDirectly(context, decodedData, fileName);
-                }
+                saveBlobDataToFile(context, decodedData, fileName, mimeType);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "下载失败", e);
+            Toast.makeText(context, "下载失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public static void saveBlobDataToFile(Context context, byte[] data, String fileName, String mimeType) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                saveFileUsingMediaStore(context, data, fileName, mimeType);
+            } else {
+                saveFileDirectly(context, data, fileName);
             }
         } catch (Exception e) {
             Log.e(TAG, "下载失败", e);

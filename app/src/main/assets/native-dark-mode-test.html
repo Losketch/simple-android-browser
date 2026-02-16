@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原生暗色模式测试</title>
+    <style>
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: #ffffff;
+                color: #000000;
+            }
+            .card {
+                border-color: #ccc;
+                background-color: #f9f9f9;
+            }
+            .status {
+                color: #0066cc;
+            }
+            .info {
+                background-color: #f0f0f0;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #ffffff;
+            }
+            .card {
+                border-color: #555;
+                background-color: #2a2a2a;
+            }
+            .status {
+                color: #66ccff;
+            }
+            .info {
+                background-color: #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>原生暗色模式测试页面</h1>
+        
+        <div class="card">
+            <h2>当前状态</h2>
+            <div class="status" id="status">检测中...</div>
+        </div>
+
+        <div class="card">
+            <h2>系统信息</h2>
+            <div class="info">
+                <strong>浏览器 User Agent:</strong><br>
+                <span id="userAgent"></span>
+            </div>
+            <div class="info">
+                <strong>媒体查询检测:</strong><br>
+                <span id="mediaQuery"></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>说明</h2>
+            <p>此页面使用纯原生 CSS @media (prefers-color-scheme) 检测。</p>
+            <p>如果系统处于暗色模式，背景应该变为深色，文字变为浅色。</p>
+            <p>如果系统处于浅色模式，背景应该为白色，文字为黑色。</p>
+            <p>不使用任何 JavaScript 注入，完全依赖 WebView 原生支持。</p>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus() {
+            const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = isDark ? '当前为暗色模式' : '当前为浅色模式';
+            
+            const mediaQueryElement = document.getElementById('mediaQuery');
+            mediaQueryElement.textContent = isDark 
+                ? 'prefers-color-scheme: dark (true)' 
+                : 'prefers-color-scheme: light (true)';
+        }
+
+        window.onload = function() {
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            updateStatus();
+            
+            if (window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                    updateStatus();
+                });
+            }
+        };
+    </script>
+</body>
+</html>

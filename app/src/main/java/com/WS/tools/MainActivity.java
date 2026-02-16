@@ -2,8 +2,10 @@ package com.WS.tools;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -25,25 +27,46 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
         
+        int nightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        boolean isDarkMode = (nightMode == Configuration.UI_MODE_NIGHT_YES);
+        
+        if (isDarkMode) {
+            getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+        } else {
+            getWindow().getDecorView().setBackgroundColor(Color.WHITE);
+        }
+
         // Initialize WebView and managers
         mWebView = findViewById(R.id.activity_main_webview);
         registerForContextMenu(mWebView);
-        
+
         // Initialize handlers
         permissionsHandler = new PermissionsHandler(this);
         permissionsHandler.checkAndRequestStoragePermission();
-        
+
         // Initialize WebView manager
         WebViewManager webViewManager = new WebViewManager(this, mWebView);
         webViewManager.setupWebView();
         webViewManager.setFilePathCallbackListener(callback -> filePathCallback = callback);
         webViewManager.setChildWebViewListener(webView -> currentChildWebView = webView);
-        
+
         // Start local server and load URL
         LocalAssetServer.start(this);
         mWebView.loadUrl(LocalAssetServer.getLocalUrl());
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        int nightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        boolean isDarkMode = (nightMode == Configuration.UI_MODE_NIGHT_YES);
+        
+        if (isDarkMode) {
+            getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+        } else {
+            getWindow().getDecorView().setBackgroundColor(Color.WHITE);
+        }
     }
 
     @Override
@@ -56,7 +79,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == FILE_CHOOSER_RESULT_CODE) {
             if (filePathCallback == null) return;
-            
+
             Uri[] results = null;
             if (resultCode == Activity.RESULT_OK && data != null) {
                 String dataString = data.getDataString();
@@ -66,6 +89,8 @@ public class MainActivity extends Activity {
             }
             filePathCallback.onReceiveValue(results);
             filePathCallback = null;
+        } else if (requestCode == PermissionsHandler.MANAGE_STORAGE_PERMISSION_REQUEST) {
+            permissionsHandler.onActivityResult(requestCode);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -74,7 +99,7 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        permissionsHandler.onRequestPermissionsResult(requestCode, grantResults);
+        permissionsHandler.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override

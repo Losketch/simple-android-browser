@@ -12,8 +12,8 @@ android {
         applicationId "com.character.display.software"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 4420
-        versionName "4.2.0"
+        versionCode 4422
+        versionName "4.2.2"
     }
     buildTypes {
         release {

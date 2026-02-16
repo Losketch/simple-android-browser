@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暗色模式测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 基于 data-color-scheme 属性的样式 (备用方案) */
+        html[data-color-scheme="dark"],
+        body[data-color-scheme="dark"] {
+            background-color: #1a1a1a !important;
+            color: #ffffff !important;
+        }
+
+        html[data-color-scheme="dark"] .card,
+        body[data-color-scheme="dark"] .card {
+            border-color: #555 !important;
+            background-color: #2a2a2a !important;
+        }
+
+        html[data-color-scheme="dark"] .info,
+        body[data-color-scheme="dark"] .info {
+            background-color: #333 !important;
+        }
+
+        html[data-color-scheme="dark"] button,
+        body[data-color-scheme="dark"] button {
+            background-color: #0056b3 !important;
+        }
+
+        html[data-color-scheme="dark"] #matchMediaResult,
+        body[data-color-scheme="dark"] #matchMediaResult {
+            background-color: #222 !important;
+        }
+
+        /* 标准的 prefers-color-scheme 媒体查询 */
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: #ffffff;
+                color: #000000;
+            }
+            .status {
+                color: #0066cc;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #ffffff;
+            }
+            .status {
+                color: #66ccff;
+            }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card {
+                border-color: #555;
+                background-color: #2a2a2a;
+            }
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .info {
+                background-color: #333;
+            }
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 10px 5px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            button {
+                background-color: #0056b3;
+            }
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        #matchMediaResult {
+            margin-top: 20px;
+            padding: 10px;
+            font-family: monospace;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #matchMediaResult {
+                background-color: #222;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>暗色模式测试页面</h1>
+        
+        <div class="card">
+            <h2>当前状态</h2>
+            <div class="status" id="status">检测中...</div>
+        </div>
+
+        <div class="card">
+            <h2>系统信息</h2>
+            <div class="info">
+                <strong>浏览器 User Agent:</strong><br>
+                <span id="userAgent"></span>
+            </div>
+            <div class="info">
+                <strong>color-scheme meta:</strong><br>
+                <span id="colorSchemeMeta"></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>JavaScript 检测</h2>
+            <button onclick="checkDarkMode()">检测暗色模式</button>
+            <button onclick="checkMatchMedia()">检查 matchMedia</button>
+            <div id="matchMediaResult"></div>
+        </div>
+
+        <div class="card">
+            <h2>说明</h2>
+            <p>此页面用于测试 WebView 是否正确支持系统的暗色模式设置。</p>
+            <p>如果系统处于暗色模式，背景应该变为深色，文字变为浅色。</p>
+            <p>如果系统处于浅色模式，背景应该为白色，文字为黑色。</p>
+        </div>
+    </div>
+
+    <script>
+        function checkDarkMode() {
+            const isDarkMedia = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDarkData = document.documentElement.getAttribute('data-color-scheme') === 'dark' || 
+                              document.body.getAttribute('data-color-scheme') === 'dark';
+            const isDark = isDarkMedia || isDarkData;
+            
+            const resultDiv = document.getElementById('matchMediaResult');
+            resultDiv.innerHTML = `
+                <strong>JavaScript 检测结果:</strong><br>
+                prefers-color-scheme 媒体查询: ${isDarkMedia ? '暗色模式' : '浅色模式'}<br>
+                data-color-scheme 属性: ${isDarkData ? '暗色模式' : '浅色模式'}<br>
+                综合判定: ${isDark ? '暗色模式' : '浅色模式'}
+            `;
+            return isDark;
+        }
+
+        function checkMatchMedia() {
+            const resultDiv = document.getElementById('matchMediaResult');
+            const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const lightQuery = window.matchMedia('(prefers-color-scheme: light)');
+            const htmlDataScheme = document.documentElement.getAttribute('data-color-scheme');
+            const bodyDataScheme = document.body.getAttribute('data-color-scheme');
+            const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+            const colorSchemeContent = colorSchemeMeta ? colorSchemeMeta.content : '未设置';
+            
+            resultDiv.innerHTML = `
+                <strong>matchMedia 详细信息:</strong><br>
+                (prefers-color-scheme: dark).matches: ${darkQuery ? darkQuery.matches : '不支持'}<br>
+                (prefers-color-scheme: light).matches: ${lightQuery ? lightQuery.matches : '不支持'}<br>
+                window.matchMedia 类型: ${typeof window.matchMedia}<br>
+                <br>
+                <strong>data-color-scheme 属性:</strong><br>
+                html[data-color-scheme]: ${htmlDataScheme || '未设置'}<br>
+                body[data-color-scheme]: ${bodyDataScheme || '未设置'}<br>
+                <br>
+                <strong>color-scheme meta 标签:</strong><br>
+                content: ${colorSchemeContent}
+            `;
+        }
+
+        function updateStatus() {
+            const isDark = checkDarkMode();
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = isDark ? '当前为暗色模式' : '当前为浅色模式';
+            
+            const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+            document.getElementById('colorSchemeMeta').textContent = 
+                colorSchemeMeta ? colorSchemeMeta.content : '未设置';
+        }
+
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', function() {
+                updateStatus();
+            });
+        }
+
+        window.onload = function() {
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            
+            updateStatus();
+            
+            setTimeout(function() {
+                updateStatus();
+            }, 100);
+            
+            setTimeout(function() {
+                updateStatus();
+            }, 500);
+            
+            setTimeout(function() {
+                updateStatus();
+            }, 1000);
+            
+            if (document.addEventListener) {
+                document.addEventListener('android-dark-mode-updated', function(event) {
+                    updateStatus();
+                    if (console) {
+                        console.log('Dark mode updated:', event.detail);
+                    }
+                });
+            }
+        };
+    </script>
+</body>
+</html>
